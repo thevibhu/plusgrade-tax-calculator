@@ -25,7 +25,7 @@ func main() {
 	// Initialize service layer
 	taxService := service.NewTaxService(cfg.TaxAPIURL)
 
-	// Initialize handlers
+	// Initialize handler
 	taxHandler := handler.NewTaxHandler(taxService)
 
 	// Routes
@@ -33,7 +33,7 @@ func main() {
 	e.POST("/tax/calculate", taxHandler.CalculateTax)
 	e.GET("/tax/brackets/:year", taxHandler.GetTaxBrackets)
 
-	// Start server
+	// Start Echo server
 	log.Info().Msgf("Starting server on port %s", cfg.Port)
 	if err := e.Start(":" + cfg.Port); err != nil {
 		log.Fatal().Msgf("Failed to start server: %v", err)
