@@ -1,0 +1,390 @@
+{
+	"info": {
+		"_postman_id": "f6a02b1e-0d95-43b1-9d61-629fda50108c",
+		"name": "plusgrade-tax-calculator",
+		"description": "This collection provides a complete set of requests to interact with the Plusgrade Tax Calculator API. It allows developers to test all available endpoints, including health checks, retrieving tax brackets, and performing tax calculations for various scenarios.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "11123282"
+	},
+	"item": [
+		{
+			"name": "Health Check",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}/health",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"health"
+					]
+				},
+				"description": "Checks the operational status of the API to ensure it is running and accessible. This is a basic endpoint to verify service health."
+			},
+			"response": []
+		},
+		{
+			"name": "Get Tax Brackets - 2022",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200 OK\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Response data is valid\", function () {",
+							"    const data = pm.response.json();",
+							"    const brackets = data.tax_brackets;",
+							"",
+							"    pm.expect(brackets).to.be.an('array').and.to.not.be.empty;",
+							"    ",
+							"    const firstBracket = brackets[0];",
+							"    pm.expect(firstBracket).to.have.all.keys('min', 'max', 'rate');",
+							"    pm.expect(firstBracket.min).to.eql(0);",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}/tax/brackets/2022",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"tax",
+						"brackets",
+						"2022"
+					]
+				},
+				"description": "Retrieves the official federal tax brackets for a specific tax year. The year is provided as a path parameter."
+			},
+			"response": []
+		},
+		{
+			"name": "Calculate Tax - Zero Income",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200 OK\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Response data for zero income is correct\", function () {",
+							"    const data = pm.response.json();",
+							"",
+							"    pm.expect(data.income).to.eql(0);",
+							"    pm.expect(data.tax_year).to.eql(\"2022\");",
+							"    pm.expect(data.total_tax).to.eql(0);",
+							"    pm.expect(data.taxes_by_band).to.be.an('array').and.to.be.empty;",
+							"    pm.expect(data.effective_rate).to.eql(0);",
+							"    pm.expect(data.after_tax_income).to.eql(0);",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"income\": 0,\n    \"tax_year\": \"2022\"\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/tax/calculate",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"tax",
+						"calculate"
+					]
+				},
+				"description": "Calculates the tax owed for a zero-income scenario. This request is useful for testing the baseline and edge-case behavior of the calculation endpoint."
+			},
+			"response": []
+		},
+		{
+			"name": "Calculate Tax - 50k Income",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200 OK\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Response for $50k income is valid\", function () {",
+							"    pm.response.to.have.status(200);",
+							"    const data = pm.response.json();",
+							"",
+							"    pm.expect(data.income).to.eql(50000);",
+							"    pm.expect(data.total_tax).to.eql(7500);",
+							"    pm.expect(data.taxes_by_band).to.be.an('array').with.lengthOf(1);",
+							"    pm.expect(data.taxes_by_band[0].tax_amount).to.eql(7500);",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"income\": 50000,\n    \"tax_year\": \"2022\"\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/tax/calculate",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"tax",
+						"calculate"
+					]
+				},
+				"description": "Calculates the tax owed for a standard income of $50,000."
+			},
+			"response": []
+		},
+		{
+			"name": "Calculate Tax - 100k Income",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200 OK\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Response data for $100k income is correct\", function () {",
+							"    const data = pm.response.json();",
+							"",
+							"    pm.expect(data.income).to.eql(100000);",
+							"    pm.expect(data.total_tax).to.be.closeTo(17739.16, 0.01);",
+							"    pm.expect(data.taxes_by_band).to.be.an('array').with.lengthOf(2);",
+							"    pm.expect(data.taxes_by_band[1].tax_amount).to.be.closeTo(10209.62, 0.01);",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"income\": 100000,\n    \"tax_year\": \"2022\"\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/tax/calculate",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"tax",
+						"calculate"
+					]
+				},
+				"description": "Calculates the tax owed for an income of $100,000, which spans multiple tax brackets."
+			},
+			"response": []
+		},
+		{
+			"name": "Calculate Tax - High Income",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200 OK\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Response data for high income is correct\", function () {",
+							"    const data = pm.response.json();",
+							"",
+							"    pm.expect(data.income).to.eql(1234567);",
+							"    pm.expect(data.total_tax).to.be.closeTo(385587.65, 0.01);",
+							"    pm.expect(data.effective_rate).to.be.closeTo(31.23, 0.01);",
+							"    pm.expect(data.taxes_by_band).to.be.an('array').with.lengthOf(5);",
+							"    pm.expect(data.taxes_by_band[4].tax_amount).to.be.closeTo(334243.47, 0.01);",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"income\": 1234567,\n    \"tax_year\": \"2022\"\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/tax/calculate",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"tax",
+						"calculate"
+					]
+				},
+				"description": "Calculates the tax owed for a high income of $1,234,567, which utilizes all available tax brackets."
+			},
+			"response": []
+		},
+		{
+			"name": "Invalid Year",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 400\", function () {",
+							"    pm.response.to.have.status(400);",
+							"});",
+							"",
+							"pm.test(\"Error message is correct\", function () {",
+							"    const data = pm.response.json();",
+							"    pm.expect(data.error).to.eql(\"Tax year must be one of: 2019, 2020, 2021, 2022\");",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"income\": 50000,\n    \"tax_year\": \"2023\"\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/tax/calculate",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"tax",
+						"calculate"
+					]
+				},
+				"description": "Tests the API's error handling for requests that provide an unsupported tax year."
+			},
+			"response": []
+		},
+		{
+			"name": "Negative Income",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 400\", function () {",
+							"    pm.response.to.have.status(400);",
+							"});",
+							"",
+							"pm.test(\"Error message is correct\", function () {",
+							"    const data = pm.response.json();",
+							"    pm.expect(data.error).to.eql(\"Income must be non-negative\");",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"income\": -1000,\n    \"tax_year\": \"2022\"\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/tax/calculate",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"tax",
+						"calculate"
+					]
+				},
+				"description": "Tests the API's validation and error handling for invalid income values, such as a negative number."
+			},
+			"response": []
+		}
+	],
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:8080",
+			"type": "string"
+		}
+	]
+}
