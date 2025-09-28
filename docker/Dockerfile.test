@@ -1,0 +1,14 @@
+FROM golang:1.24-alpine
+
+WORKDIR /app
+
+RUN apk add --no-cache git bash
+
+COPY . .
+
+RUN go mod download || true
+
+RUN mkdir -p /coverage
+
+# Run tests with coverage when container starts
+CMD ["sh", "-c", "go test -v -coverprofile=/coverage/coverage.out ./..."]
