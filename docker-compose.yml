@@ -8,7 +8,7 @@ services:
       - tax-network
 
   # Tax Calculator Backend
-  tax-calculator:
+  plusgrade-tax-calculator:
     build:
       context: .
       dockerfile: docker/Dockerfile
@@ -28,7 +28,7 @@ services:
       retries: 3
 
   # Unit Tests
-  test-runner:
+  unit-test:
     build:
       context: .
       dockerfile: docker/Dockerfile.test
@@ -37,20 +37,20 @@ services:
     networks:
       - tax-network
     profiles:
-      - unit-test
+      - test-suite
 
   # Integration Tests via Newman
-  newman:
+  integration-test:
     image: postman/newman:alpine
     volumes:
       - ./postman:/etc/newman
-    command: run /etc/newman/tax-calculator.postman_collection.json --env-var "baseUrl=http://tax-calculator:8080"
+    command: run /etc/newman/plusgrade-tax-calculator.postman_collection.json --env-var "baseUrl=http://plusgrade-tax-calculator:8080"
     networks:
       - tax-network
     depends_on:
-      - tax-calculator
+      - plusgrade-tax-calculator
     profiles:
-      - integration-test
+      - test-suite
 
 networks:
   tax-network:
